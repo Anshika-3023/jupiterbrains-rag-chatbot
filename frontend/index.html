@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JupiterBrains — Chat Widget Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="chat-widget.css">
+  <style>
+    :root {
+      --bg: #07070e;
+      --accent: #7c6aff;
+      --accent2: #a78bfa;
+      --text: #dcdcf0;
+      --muted: #55556a;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'DM Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Animated background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(124,106,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,106,255,.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      z-index: 0;
+    }
+
+    /* Glowing orb in background */
+    body::after {
+      content: '';
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124,106,255,0.08) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 40px 20px;
+      max-width: 560px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .logo-orb {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), #4f3dc8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 24px rgba(124,106,255,0.45);
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 26px;
+      letter-spacing: -.03em;
+      color: #fff;
+    }
+
+    .logo-text em {
+      color: var(--accent2);
+      font-style: normal;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(28px, 5vw, 42px);
+      line-height: 1.15;
+      letter-spacing: -.03em;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 30%, var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 36px;
+    }
+
+    .cta-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      cursor: pointer;
+      transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+      text-decoration: none;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #4f3dc8);
+      color: #fff;
+      box-shadow: 0 6px 24px rgba(124,106,255,.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 10px 32px rgba(124,106,255,.45);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,.05);
+      color: var(--accent2);
+      border: 1px solid rgba(124,106,255,.25);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      background: rgba(124,106,255,.1);
+    }
+
+    .hint {
+      position: fixed;
+      bottom: 90px;
+      right: 24px;
+      background: rgba(124,106,255,.12);
+      border: 1px solid rgba(124,106,255,.25);
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 12px;
+      color: var(--accent2);
+      z-index: 999;
+      pointer-events: none;
+      animation: fadeHint 0.5s ease 1.5s both;
+    }
+
+    .hint::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      right: 20px;
+      width: 14px;
+      height: 14px;
+      background: rgba(124,106,255,.12);
+      border-right: 1px solid rgba(124,106,255,.25);
+      border-bottom: 1px solid rgba(124,106,255,.25);
+      transform: rotate(45deg);
+    }
+
+    @keyframes fadeHint {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="logo">
+      <div class="logo-orb">🪐</div>
+      <span class="logo-text">Jupiter<em>Brains</em></span>
+    </div>
+
+    <h1>Your AI Assistant<br>is Ready</h1>
+
+    <p>
+      This page hosts the JupiterBrains RAG chat widget.<br>
+      Click the chat button in the bottom-right corner to get started.
+    </p>
+
+    <div class="cta-row">
+      <button class="btn btn-primary" onclick="window.JBChat && window.JBChat.open()">
+        💬 Open Chat
+      </button>
+      <a class="btn btn-secondary" href="http://localhost:8000/docs" target="_blank">
+        ⚡ API Docs
+      </a>
+    </div>
+  </div>
+
+  <!-- Hint arrow pointing at the widget launcher -->
+  <div class="hint">👇 Click here to chat</div>
+
+  <!-- JupiterBrains Chat Widget -->
+  <script>
+    window.JBChatConfig = {
+      apiUrl: "http://localhost:8000"
+    };
+  </script>
+  <script src="chat-widget.js" defer></script>
+
+</body>
+</html>

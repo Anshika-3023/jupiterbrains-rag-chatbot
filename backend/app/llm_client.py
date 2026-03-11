@@ -50,10 +50,9 @@ def build_messages(context_chunks: list[dict], question: str) -> list[dict]:
     context_block = "\n\n".join(context_parts)
 
     user_content = (
-        f"Here is the relevant company documentation:\n\n"
         f"<context>\n{context_block}\n</context>\n\n"
-        f"User question: {question}\n\n"
-        f"Please answer in 2–4 sentences using only the context above."
+        f"Question: {question}\n\n"
+        f"Reply in 2-3 sentences max. Be direct and specific — no generic filler."
     )
 
     return [

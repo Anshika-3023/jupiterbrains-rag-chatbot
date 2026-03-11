@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 from docx import Document as DocxDocument
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 # Allow running as a standalone script from backend/app/
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
