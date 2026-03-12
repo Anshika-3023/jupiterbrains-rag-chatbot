@@ -336,21 +336,21 @@
     }
   }
 
-  /* ── Welcome bubble content (text + book meeting button) ────────────────── */
+  /* ── Welcome bubble content (text + book meeting hyperlink) ────────────────── */
   function buildWelcomeBubbleContent() {
     const frag = document.createDocumentFragment();
-    frag.appendChild(txt(cfg.welcomeMessage));
-    frag.appendChild(document.createElement("br"));
-    frag.appendChild(document.createElement("br"));
+    frag.appendChild(txt(cfg.welcomeMessage + " You can also "));
 
     const link = el("a", {
       href:   cfg.meetingUrl,
       target: "_blank",
       rel:    "noopener noreferrer",
-      class:  "jb-meeting-btn",
-    }, [txt("📅 Book a meeting with our team")]);
+      class:  "jb-inline-meeting-link",
+    }, [txt("book a meeting with our team here")]);
 
     frag.appendChild(link);
+    frag.appendChild(txt("."));
+
     return frag;
   }
 
