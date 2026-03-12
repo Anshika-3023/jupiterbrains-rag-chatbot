@@ -108,28 +108,66 @@ cp .env.example .env
 
 ## Quick Start (Local Development)
 
-```bash
-# 1. Set up environment
-python -m venv venv
-source venv/bin/activate       # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env
-# → edit .env and add your GROQ_API_KEY
+### Prerequisites
+- Python 3.11+
+- Groq API key ([get one free](https://console.groq.com/keys))
 
-# 2. Ingest documents (run once, or after updating docs)
+### Step 1: Set up environment
+
+**Windows:**
+```bash
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+**macOS/Linux:**
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Step 2: Configure environment
+
+Create a `.env` file in the project root:
+
+```bash
+cp .env.example .env
+# Edit .env and add your GROQ_API_KEY
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+### Step 3: Ingest documents (run once)
+
+```bash
 cd backend
 python app/ingest_documents.py
+```
 
-# 3. Start the API server
+### Step 4: Start the backend API server
+
+```bash
+cd backend
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-API available at `http://localhost:8000`
-Interactive docs at `http://localhost:8000/docs`
+The API will be available at `http://localhost:8000`  
+Interactive API docs at `http://localhost:8000/docs`
+
+### Step 5: Open the frontend
+
+Open `frontend/index.html` in your browser to access the chat widget interface.
+
+> **Note:** The frontend is a static HTML file and doesn't require a server. Just open it directly in your browser.
 
 ---
 
 ## Docker Deployment
+
+### Prerequisites
+- Docker and Docker Compose installed
+- Groq API key
 
 ### Build and run
 
@@ -137,7 +175,7 @@ Interactive docs at `http://localhost:8000/docs`
 docker build -t jupiterbrains-rag-chatbot -f docker/Dockerfile .
 
 docker run -p 8000:8000 \
-  -e GROQ_API_KEY=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 \
+  -e GROQ_API_KEY=your_groq_api_key_here \
   -v $(pwd)/chroma_db:/app/chroma_db \
   jupiterbrains-rag-chatbot
 ```
@@ -145,8 +183,8 @@ docker run -p 8000:8000 \
 ### Docker Compose (recommended)
 
 ```bash
-# Create docker/.env
-echo "GROQ_API_KEY=your_key_here" > docker/.env
+# Create docker/.env file
+echo "GROQ_API_KEY=your_groq_api_key_here" > docker/.env
 
 docker compose -f docker/docker-compose.yml up -d --build
 
@@ -154,6 +192,8 @@ docker compose -f docker/docker-compose.yml up -d --build
 docker compose -f docker/docker-compose.yml exec rag-chatbot \
   python backend/app/ingest_documents.py
 ```
+
+> **Note:** The docker-compose.yml file currently references `REPLICATE_API_TOKEN` but the application uses `GROQ_API_KEY`. Either update the docker-compose.yml or use the `-e GROQ_API_KEY` flag when running the container.
 
 ---
 

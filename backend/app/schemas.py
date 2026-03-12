@@ -1,32 +1,32 @@
 """
-schemas.py - Pydantic models for API request and response validation.
+schemas.py - Pydantic models for request/response validation.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
 
 class ChatRequest(BaseModel):
-    """Incoming chat message from the user."""
-    question: str = Field(
-        ...,
-        min_length=1,
-        max_length=2000,
-        description="The user's question",
-        examples=["What industries do you support?"],
-    )
+    """Incoming chat message — now includes user email to save history."""
+    question: str = Field(..., min_length=1, max_length=2000)
+    email:    str = Field(default="", description="User email for saving chat history")
 
 
 class ChatResponse(BaseModel):
-    """Response returned to the frontend."""
-    answer: str = Field(..., description="Generated answer from the RAG pipeline")
-    sources: list[str] = Field(
-        default_factory=list,
-        description="Source document names used to generate the answer",
-    )
+    answer:  str       = Field(...)
+    sources: list[str] = Field(default_factory=list)
 
 
 class HealthResponse(BaseModel):
-    """Basic health-check response."""
-    status: str
-    vector_store_ready: bool
-    documents_indexed: int
+    status:              str
+    vector_store_ready:  bool
+    documents_indexed:   int
+
+
+class SaveEmailRequest(BaseModel):
+    email: EmailStr
+    name:  str = Field(default="")
+
+
+class SaveEmailResponse(BaseModel):
+    success: bool
+    message: str
