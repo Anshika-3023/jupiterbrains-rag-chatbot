@@ -123,7 +123,7 @@
 
     const moreBtn  = el("button", { type: "button", class: "jb-h-btn", html: "···" });
     const closeBtn = el("button", { type: "button", class: "jb-h-btn", html: "×" });
-    closeBtn.addEventListener("click", toggle);
+    closeBtn.addEventListener("click", (e) => { e.stopPropagation(); closeChat(); });
 
     return el("div", { id: "jb-header" }, [avatar, info, moreBtn, closeBtn]);
   }
@@ -314,43 +314,55 @@
     document.getElementById("jb-welcome-popup")?.classList.remove("jb-popup-visible");
   }
 
-  /* ── Toggle window ──────────────────────────────────────────────────────── */
-  function toggle() {
-    isOpen = !isOpen;
+  /* ── Open / Close (explicit, no blind toggle) ─────────────────────────── */
+  function openChat() {
+    if (isOpen) return;
+    isOpen = true;
     const win      = document.getElementById("jb-chat-window");
     const launcher = document.getElementById("jb-launcher");
     const badge    = document.getElementById("jb-badge");
 
-    if (isOpen) {
-      win.classList.add("jb-open");
-      launcher.classList.add("jb-launcher-open");
-      if (badge) badge.style.display = "none";
-      setTimeout(() => {
-        (document.getElementById("jb-email-field") ||
-         document.getElementById("jb-input"))?.focus();
-      }, 320);
-    } else {
-      win.classList.remove("jb-open");
-      launcher.classList.remove("jb-launcher-open");
-      if (badge) badge.style.display = "none";
-    }
+    win.classList.add("jb-open");
+    launcher.classList.add("jb-launcher-open");
+    if (badge) badge.style.display = "none";
+    setTimeout(() => {
+      (document.getElementById("jb-email-field") ||
+       document.getElementById("jb-input"))?.focus();
+    }, 320);
   }
 
-  /* ── Welcome bubble content (text + book meeting hyperlink) ────────────────── */
+  function closeChat() {
+    if (!isOpen) return;
+    isOpen = false;
+    const win      = document.getElementById("jb-chat-window");
+    const launcher = document.getElementById("jb-launcher");
+    const badge    = document.getElementById("jb-badge");
+
+    win.classList.remove("jb-open");
+    launcher.classList.remove("jb-launcher-open");
+    if (badge) badge.style.display = "none";
+  }
+
+  function toggle() {
+    if (isOpen) closeChat();
+    else openChat();
+  }
+
+  /* ── Welcome bubble content (text + book meeting button) ────────────────── */
   function buildWelcomeBubbleContent() {
     const frag = document.createDocumentFragment();
-    frag.appendChild(txt(cfg.welcomeMessage + " You can also "));
+    frag.appendChild(txt(cfg.welcomeMessage));
+    frag.appendChild(document.createElement("br"));
+    frag.appendChild(document.createElement("br"));
 
     const link = el("a", {
       href:   cfg.meetingUrl,
       target: "_blank",
       rel:    "noopener noreferrer",
-      class:  "jb-inline-meeting-link",
-    }, [txt("book a meeting with our team here")]);
+      class:  "jb-meeting-btn",
+    }, [txt("📅 Book a meeting with our team")]);
 
     frag.appendChild(link);
-    frag.appendChild(txt("."));
-
     return frag;
   }
 
@@ -502,8 +514,8 @@
 
   /* ── Public API ─────────────────────────────────────────────────────────── */
   window.JBChat = {
-    open:      () => { if (!isOpen) toggle(); },
-    close:     () => { if (isOpen)  toggle(); },
+    open:      () => { openChat(); },
+    close:     () => { closeChat(); },
     // Call this in browser console to test email gate again: JBChat.resetUser()
     resetUser: () => {
       localStorage.removeItem("jb_user_email");
