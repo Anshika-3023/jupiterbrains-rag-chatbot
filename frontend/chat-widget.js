@@ -125,7 +125,25 @@
     const closeBtn = el("button", { type: "button", class: "jb-h-btn", html: "×" });
     closeBtn.addEventListener("click", (e) => { e.stopPropagation(); closeChat(); });
 
-    return el("div", { id: "jb-header" }, [avatar, info, moreBtn, closeBtn]);
+    // Dropdown menu for ··· button
+    const dropdown = el("div", { class: "jb-more-dropdown" });
+    const tcItem = el("div", { class: "jb-more-item" }, [txt("📄 Terms & Conditions")]);
+    tcItem.addEventListener("click", (e) => {
+      e.stopPropagation();
+      window.open("https://www.jupiterbrains.com/terms", "_blank");
+      dropdown.classList.remove("jb-more-open");
+    });
+    dropdown.appendChild(tcItem);
+
+    moreBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle("jb-more-open");
+    });
+    document.addEventListener("click", () => dropdown.classList.remove("jb-more-open"));
+
+    const headerEl = el("div", { id: "jb-header" }, [avatar, info, moreBtn, closeBtn]);
+    headerEl.appendChild(dropdown);
+    return headerEl;
   }
 
   /* ── Email Screen (swif.ai body) ────────────────────────────────────────── */
@@ -371,15 +389,17 @@
     const card = el("div", { class: "jb-meeting-card" });
     const icon = el("div", { class: "jb-meeting-card-icon" }, [txt("📅")]);
     const info = el("div", { class: "jb-meeting-card-info" });
-    info.appendChild(el("div", { class: "jb-meeting-card-title" }, [txt("Book a Meeting")]));
-    info.appendChild(el("div", { class: "jb-meeting-card-sub" }, [txt("30 min · Free · Calendly")]));
-    const btn = el("a", {
+
+    const link = el("a", {
       href:   cfg.meetingUrl,
       target: "_blank",
       rel:    "noopener noreferrer",
-      class:  "jb-meeting-card-btn",
-    }, [txt("Schedule Now →")]);
-    card.append(icon, info, btn);
+      class:  "jb-meeting-hyperlink",
+    }, [txt("Book a Call")]);
+
+    info.appendChild(link);
+    info.appendChild(el("div", { class: "jb-meeting-card-sub" }, [txt("Our team will contact you within 24 hours.")]));
+    card.append(icon, info);
     return card;
   }
 

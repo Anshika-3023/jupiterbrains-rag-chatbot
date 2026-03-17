@@ -89,6 +89,7 @@
   border-bottom: 1px solid var(--jb-border);
   background: var(--jb-surface);
   flex-shrink: 0;
+  position: relative;
 }
 
 .jb-h-avatar {
@@ -348,7 +349,7 @@
   background: rgba(255,255,255,0.05);
   border: 1px solid var(--jb-border2);
   border-radius: 10px;
-  padding: 9px 13px;
+  padding: 11px 16px;
   font-family: var(--jb-font); font-size: 13.5px;
   color: var(--jb-text); outline: none;
   resize: none; max-height: 100px; line-height: 1.5;
@@ -480,4 +481,50 @@
 .jb-meeting-card-btn:hover {
   background: #e8e8e8;
   transform: translateY(-1px);
+}
+
+/* ── More Dropdown ── */
+.jb-more-dropdown {
+  display: none;
+  position: absolute;
+  top: 54px;
+  right: 44px;
+  background: #1e1e1e;
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  z-index: 10001;
+  min-width: 180px;
+  overflow: hidden;
+}
+.jb-more-dropdown.jb-more-open {
+  display: block;
+}
+.jb-more-item {
+  padding: 11px 16px;
+  font-size: 13px;
+  color: #eee;
+  cursor: pointer;
+  font-family: var(--jb-font);
+  transition: background 0.15s;
+}
+.jb-more-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+/* ── Meeting Hyperlink (contact query response) ── */
+.jb-meeting-hyperlink {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255,255,255,0.5);
+  transition: text-decoration-color 0.15s, opacity 0.15s;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+.jb-meeting-hyperlink:hover {
+  text-decoration-color: #fff;
+  opacity: 0.85;
 }
