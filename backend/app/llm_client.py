@@ -41,15 +41,21 @@ def build_messages(context_chunks: list[dict], question: str) -> list[dict]:
     Context chunks are formatted into the user message body.
     """
     # Build numbered context block from retrieved chunks
+    # Source labels are made explicit so the LLM can respect document boundaries.
     context_parts = []
     for i, chunk in enumerate(context_chunks, 1):
         source = chunk.get("source", "unknown")
         text = chunk.get("text", "").strip()
-        context_parts.append(f"[{i}] (Source: {source})\n{text}")
+        context_parts.append(
+            f"[Chunk {i} | Document: \"{source}\"]\n{text}"
+        )
 
-    context_block = "\n\n".join(context_parts)
+    context_block = "\n\n---\n\n".join(context_parts)
 
     user_content = (
+        f"Use ONLY the context chunks below to answer the question.\n"
+        f"Each chunk is labelled with its source document — respect these boundaries "
+        f"(e.g. do NOT derive product definitions from FAQ or partner-program chunks).\n\n"
         f"<context>\n{context_block}\n</context>\n\n"
         f"Question: {question}\n\n"
         f"Reply in 2-3 sentences max. Be direct and specific — no generic filler."
