@@ -125,25 +125,7 @@
     const closeBtn = el("button", { type: "button", class: "jb-h-btn", html: "×" });
     closeBtn.addEventListener("click", (e) => { e.stopPropagation(); closeChat(); });
 
-    // Dropdown menu for ··· button
-    const dropdown = el("div", { class: "jb-more-dropdown" });
-    const tcItem = el("div", { class: "jb-more-item" }, [txt("📄 Terms & Conditions")]);
-    tcItem.addEventListener("click", (e) => {
-      e.stopPropagation();
-      window.open("https://www.jupiterbrains.com/terms", "_blank");
-      dropdown.classList.remove("jb-more-open");
-    });
-    dropdown.appendChild(tcItem);
-
-    moreBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      dropdown.classList.toggle("jb-more-open");
-    });
-    document.addEventListener("click", () => dropdown.classList.remove("jb-more-open"));
-
-    const headerEl = el("div", { id: "jb-header" }, [avatar, info, moreBtn, closeBtn]);
-    headerEl.appendChild(dropdown);
-    return headerEl;
+    return el("div", { id: "jb-header" }, [avatar, info, moreBtn, closeBtn]);
   }
 
   /* ── Email Screen (swif.ai body) ────────────────────────────────────────── */
@@ -204,9 +186,28 @@
       chip.addEventListener("click", () => { hideSuggestions(); sendMessage(q); });
       sugBar.appendChild(chip);
     });
-    const wrap = el("div", { id: "jb-msgs-wrap" });
-    wrap.append(msgs, sugBar);
-    return wrap;
+
+    // Scroll button appended to window directly (not inside msgs)
+    setTimeout(() => {
+      const win = document.getElementById("jb-chat-window");
+      if (!win || document.getElementById("jb-scroll-btn")) return;
+      const scrollBtn = document.createElement("button");
+      scrollBtn.id = "jb-scroll-btn";
+      scrollBtn.type = "button";
+      scrollBtn.innerHTML = "&#8595;";
+      scrollBtn.addEventListener("click", () => {
+        const m = document.getElementById("jb-messages");
+        if (m) m.scrollTo({ top: m.scrollHeight, behavior: "smooth" });
+      });
+      win.appendChild(scrollBtn);
+      msgs.addEventListener("scroll", () => {
+        const dist = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight;
+        scrollBtn.style.display = dist > 80 ? "flex" : "none";
+      });
+    }, 200);
+
+    msgs.appendChild(sugBar);
+    return msgs;
   }
 
   /* ── Chat Input ─────────────────────────────────────────────────────────── */
@@ -389,17 +390,15 @@
     const card = el("div", { class: "jb-meeting-card" });
     const icon = el("div", { class: "jb-meeting-card-icon" }, [txt("📅")]);
     const info = el("div", { class: "jb-meeting-card-info" });
-
-    const link = el("a", {
+    info.appendChild(el("div", { class: "jb-meeting-card-title" }, [txt("Book a Meeting")]));
+    info.appendChild(el("div", { class: "jb-meeting-card-sub" }, [txt("30 min · Free · Calendly")]));
+    const btn = el("a", {
       href:   cfg.meetingUrl,
       target: "_blank",
       rel:    "noopener noreferrer",
-      class:  "jb-meeting-hyperlink",
-    }, [txt("Book a Call")]);
-
-    info.appendChild(link);
-    info.appendChild(el("div", { class: "jb-meeting-card-sub" }, [txt("Our team will contact you within 24 hours.")]));
-    card.append(icon, info);
+      class:  "jb-meeting-card-btn",
+    }, [txt("Schedule Now →")]);
+    card.append(icon, info, btn);
     return card;
   }
 
