@@ -1,6 +1,7 @@
 /**
- * JupiterBrains RAG Chat Widget  v3.1.0
- * FIXED: Email gate always shows for new users, popup works correctly
+ * JupiterBrains RAG Chat Widget  v3.2.0
+ * CHANGES: Suggestions below greeting, visible scrollbar, hyperlink contact card,
+ *          T&C dropdown in ···, padded inputs, Nilesh email shown on contact query
  */
 
 (function () {
@@ -15,6 +16,8 @@
       agentAvatar:       "🪐",
       welcomeMessage:    "Thank you for visiting JupiterBrains! Let me know if you have questions — I'm happy to help.",
       meetingUrl:        "https://calendly.com/nilesh-jupiterbrains/30min",
+      nileshEmail:       "nilesh@jupiterbrains.com",
+      termsUrl:          "https://www.jupiterbrains.com/terms",
       welcomePopupDelay: 2000,
       welcomePopupText:  "Thank you for visiting JupiterBrains! Let me know if you have questions — I'm happy to help. 🚀",
       suggestions: [
@@ -35,7 +38,6 @@
   let history        = [];
   let popupDismissed = false;
 
-  // Strict email check — must contain @ and a dot after @
   const _saved       = localStorage.getItem("jb_user_email") || "";
   let userEmail      = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(_saved) ? _saved : "";
   let emailCaptured  = !!userEmail;
@@ -66,10 +68,8 @@
     if (document.getElementById("jb-chat-root")) return;
     const root = el("div", { id: "jb-chat-root" });
 
-    // Welcome popup (shown to ALL visitors after delay)
     root.appendChild(buildWelcomePopup());
 
-    // Launcher button — both icons embedded, CSS toggles which shows
     const badge      = el("span", { id: "jb-badge" }, [txt("1")]);
     const iconOpen   = el("span", { class: "jb-icon-open",  html: ICON_CHAT  });
     const iconClose  = el("span", { class: "jb-icon-close", html: ICON_CLOSE });
@@ -78,22 +78,18 @@
     launcher.addEventListener("click", (e) => { e.stopPropagation(); hidePopup(); toggle(); });
     root.appendChild(launcher);
 
-    // Chat window — stop clicks inside from bubbling to launcher
     const win = el("div", { id: "jb-chat-window", role: "dialog" });
     win.addEventListener("click", e => e.stopPropagation());
     win.appendChild(buildHeader());
 
-    // Body
     const body = el("div", { id: "jb-body" });
     win.appendChild(body);
 
     if (emailCaptured) {
-      // Returning user — show chat directly
       body.appendChild(buildMessagesArea());
       win.appendChild(buildChatInput());
       setTimeout(() => appendBotMessage(cfg.welcomeMessage, [], true), 100);
     } else {
-      // New user — show swif.ai email screen
       body.appendChild(buildEmailScreen());
       win.appendChild(buildEmailInputBar());
     }
@@ -101,12 +97,10 @@
     root.appendChild(win);
     document.body.appendChild(root);
 
-    // Show popup to ALL users after delay
     setTimeout(() => {
       if (!isOpen && !popupDismissed) showPopup();
     }, cfg.welcomePopupDelay);
 
-    // Show badge notification
     setTimeout(() => {
       if (!isOpen) badge.style.display = "flex";
     }, 3500);
@@ -125,12 +119,12 @@
     const closeBtn = el("button", { type: "button", class: "jb-h-btn", html: "×" });
     closeBtn.addEventListener("click", (e) => { e.stopPropagation(); closeChat(); });
 
-    // Dropdown menu for ··· button
+    /* ── Three-dots dropdown → Terms & Conditions ── */
     const dropdown = el("div", { class: "jb-more-dropdown" });
-    const tcItem = el("div", { class: "jb-more-item" }, [txt("📄 Terms & Conditions")]);
+    const tcItem   = el("div", { class: "jb-more-item" }, [txt("📄 Terms & Conditions")]);
     tcItem.addEventListener("click", (e) => {
       e.stopPropagation();
-      window.open("https://www.jupiterbrains.com/terms", "_blank");
+      window.open(cfg.termsUrl, "_blank");
       dropdown.classList.remove("jb-more-open");
     });
     dropdown.appendChild(tcItem);
@@ -141,30 +135,31 @@
     });
     document.addEventListener("click", () => dropdown.classList.remove("jb-more-open"));
 
-    const headerEl = el("div", { id: "jb-header" }, [avatar, info, moreBtn, closeBtn]);
-    headerEl.appendChild(dropdown);
-    return headerEl;
+    /* Wrap moreBtn + dropdown together for relative positioning */
+    const moreWrap = el("div", { class: "jb-more-wrap" });
+    moreWrap.append(moreBtn, dropdown);
+
+    return el("div", { id: "jb-header" }, [avatar, info, moreWrap, closeBtn]);
   }
 
-  /* ── Email Screen (swif.ai body) ────────────────────────────────────────── */
+  /* ── Email Screen ───────────────────────────────────────────────────────── */
   function buildEmailScreen() {
-    const screen   = el("div", { id: "jb-email-screen" });
-    const hint     = el("div", { id: "jb-gate-hint" }, [txt("Ask us anything, or share your feedback.")]);
+    const screen  = el("div", { id: "jb-email-screen" });
+    const hint    = el("div", { id: "jb-gate-hint" }, [txt("Ask us anything, or share your feedback.")]);
 
-    // Bot message bubble
-    const avatarEl  = el("div", { class: "jb-msg-avatar" }, [txt(cfg.agentAvatar)]);
-    const bubble    = el("div", { class: "jb-bubble" });
+    const avatarEl = el("div", { class: "jb-msg-avatar" }, [txt(cfg.agentAvatar)]);
+    const bubble   = el("div", { class: "jb-bubble" });
     bubble.appendChild(buildWelcomeBubbleContent());
-    const msgWrap   = el("div", { class: "jb-msg bot" }, [bubble]);
-    const label     = el("div", { class: "jb-msg-label" }, [txt(cfg.botName + " • 1m")]);
-    const msgCol    = el("div", { class: "jb-msg-col" }, [msgWrap, label]);
-    const msgRow    = el("div", { class: "jb-msg-row" }, [avatarEl, msgCol]);
+    const msgWrap  = el("div", { class: "jb-msg bot" }, [bubble]);
+    const label    = el("div", { class: "jb-msg-label" }, [txt(cfg.botName + " • 1m")]);
+    const msgCol   = el("div", { class: "jb-msg-col" }, [msgWrap, label]);
+    const msgRow   = el("div", { class: "jb-msg-row" }, [avatarEl, msgCol]);
 
     screen.append(hint, msgRow);
     return screen;
   }
 
-  /* ── Email Input Bar (swif.ai bottom) ───────────────────────────────────── */
+  /* ── Email Input Bar ────────────────────────────────────────────────────── */
   function buildEmailInputBar() {
     const wrap = el("div", { id: "jb-email-input-wrap" });
 
@@ -196,17 +191,24 @@
   }
 
   /* ── Messages Area ──────────────────────────────────────────────────────── */
+  /* Suggestion chips are injected INTO #jb-messages right after the welcome   */
+  /* bubble so they appear immediately below the greeting, not stuck at bottom */
   function buildMessagesArea() {
-    const msgs   = el("div", { id: "jb-messages", "aria-live": "polite" });
+    const msgs = el("div", { id: "jb-messages", "aria-live": "polite" });
+    const wrap = el("div", { id: "jb-msgs-wrap" });
+    wrap.appendChild(msgs);
+    return wrap;
+  }
+
+  /* ── Build suggestion chips ─────────────────────────────────────────────── */
+  function buildSuggestions() {
     const sugBar = el("div", { id: "jb-suggestions" });
     cfg.suggestions.forEach(q => {
       const chip = el("button", { type: "button", class: "jb-chip" }, [txt(q)]);
       chip.addEventListener("click", () => { hideSuggestions(); sendMessage(q); });
       sugBar.appendChild(chip);
     });
-    const wrap = el("div", { id: "jb-msgs-wrap" });
-    wrap.append(msgs, sugBar);
-    return wrap;
+    return sugBar;
   }
 
   /* ── Chat Input ─────────────────────────────────────────────────────────── */
@@ -236,7 +238,6 @@
     const email   = (emailInp?.value || "").trim();
     const message = (msgInp?.value || "").trim();
 
-    // Validate email
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       errorEl.textContent = "Please enter a valid email address.";
       emailInp.style.borderBottomColor = "rgba(255,100,100,0.6)";
@@ -247,29 +248,25 @@
     errorEl.textContent = "";
     if (sendBtn) sendBtn.disabled = true;
 
-    // Save to localStorage immediately
     localStorage.setItem("jb_user_email", email);
     userEmail     = email;
     emailCaptured = true;
 
-    // Save to backend (fire and forget — don't block user)
     fetch(`${cfg.apiUrl}/save-email`, {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({ email, name: "" }),
     }).catch(err => console.warn("[JBChat] Email save failed:", err));
 
-    // Transition to chat
     switchToChat(message || null);
   }
 
   /* ── Switch email screen → chat ─────────────────────────────────────────── */
   function switchToChat(firstMessage) {
-    const body      = document.getElementById("jb-body");
-    const emailBar  = document.getElementById("jb-email-input-wrap");
-    const win       = document.getElementById("jb-chat-window");
+    const body     = document.getElementById("jb-body");
+    const emailBar = document.getElementById("jb-email-input-wrap");
+    const win      = document.getElementById("jb-chat-window");
 
-    // Fade out
     body.style.transition = "opacity 0.2s";
     body.style.opacity    = "0";
     if (emailBar) {
@@ -278,19 +275,16 @@
     }
 
     setTimeout(() => {
-      // Swap body content
       body.innerHTML = "";
       body.appendChild(buildMessagesArea());
       body.style.opacity = "1";
 
-      // Swap input bar
       if (emailBar) emailBar.remove();
       win.appendChild(buildChatInput());
 
-      // Show welcome message
+      // Welcome message; suggestions appended inside appendBotMessage(isWelcome=true)
       appendBotMessage(cfg.welcomeMessage, [], true);
 
-      // Send first message if user typed one
       if (firstMessage) {
         setTimeout(() => sendMessage(firstMessage), 500);
       } else {
@@ -324,24 +318,19 @@
     return popup;
   }
 
-  function showPopup() {
-    document.getElementById("jb-welcome-popup")?.classList.add("jb-popup-visible");
-  }
+  function showPopup() { document.getElementById("jb-welcome-popup")?.classList.add("jb-popup-visible"); }
   function hidePopup() {
     popupDismissed = true;
     document.getElementById("jb-welcome-popup")?.classList.remove("jb-popup-visible");
   }
 
-  /* ── Open / Close (explicit, no blind toggle) ─────────────────────────── */
+  /* ── Open / Close ─────────────────────────────────────────────────────── */
   function openChat() {
     if (isOpen) return;
     isOpen = true;
-    const win      = document.getElementById("jb-chat-window");
-    const launcher = document.getElementById("jb-launcher");
-    const badge    = document.getElementById("jb-badge");
-
-    win.classList.add("jb-open");
-    launcher.classList.add("jb-launcher-open");
+    document.getElementById("jb-chat-window")?.classList.add("jb-open");
+    document.getElementById("jb-launcher")?.classList.add("jb-launcher-open");
+    const badge = document.getElementById("jb-badge");
     if (badge) badge.style.display = "none";
     setTimeout(() => {
       (document.getElementById("jb-email-field") ||
@@ -352,21 +341,15 @@
   function closeChat() {
     if (!isOpen) return;
     isOpen = false;
-    const win      = document.getElementById("jb-chat-window");
-    const launcher = document.getElementById("jb-launcher");
-    const badge    = document.getElementById("jb-badge");
-
-    win.classList.remove("jb-open");
-    launcher.classList.remove("jb-launcher-open");
+    document.getElementById("jb-chat-window")?.classList.remove("jb-open");
+    document.getElementById("jb-launcher")?.classList.remove("jb-launcher-open");
+    const badge = document.getElementById("jb-badge");
     if (badge) badge.style.display = "none";
   }
 
-  function toggle() {
-    if (isOpen) closeChat();
-    else openChat();
-  }
+  function toggle() { if (isOpen) closeChat(); else openChat(); }
 
-  /* ── Welcome bubble content (text + book meeting button) ────────────────── */
+  /* ── Welcome bubble content ─────────────────────────────────────────────── */
   function buildWelcomeBubbleContent() {
     const frag = document.createDocumentFragment();
     frag.appendChild(txt(cfg.welcomeMessage));
@@ -384,38 +367,49 @@
     return frag;
   }
 
-  /* ── Meeting link card — shown when user asks for contact ───────────────── */
+  /* ── Contact card — hyperlink + response note + Nilesh email ────────────── */
   function buildMeetingCard() {
     const card = el("div", { class: "jb-meeting-card" });
-    const icon = el("div", { class: "jb-meeting-card-icon" }, [txt("📅")]);
-    const info = el("div", { class: "jb-meeting-card-info" });
 
-    const link = el("a", {
+    // "Book a Call" hyperlink
+    const line1    = el("div", { class: "jb-meeting-line" });
+    const bookLink = el("a", {
       href:   cfg.meetingUrl,
       target: "_blank",
       rel:    "noopener noreferrer",
       class:  "jb-meeting-hyperlink",
-    }, [txt("Book a Call")]);
+    }, [txt("📅 Book a Call")]);
+    line1.appendChild(bookLink);
 
-    info.appendChild(link);
-    info.appendChild(el("div", { class: "jb-meeting-card-sub" }, [txt("Our team will contact you within 24 hours.")]));
-    card.append(icon, info);
+    // Response-time message
+    const line2 = el("div", { class: "jb-meeting-card-sub" },
+      [txt("Our team will get back to you within 24 hrs.")]);
+
+    // Nilesh's email
+    const line3      = el("div", { class: "jb-meeting-line" });
+    const emailLink  = el("a", {
+      href:  "mailto:" + cfg.nileshEmail,
+      class: "jb-meeting-hyperlink jb-meeting-email",
+    }, [txt("📧 " + cfg.nileshEmail)]);
+    line3.appendChild(emailLink);
+
+    card.append(line1, line2, line3);
     return card;
   }
 
-  /* ── Detect if user is asking for contact/meeting ───────────────────────── */
+  /* ── Detect contact/booking intent ──────────────────────────────────────── */
   function isContactQuery(text) {
-    const keywords = ["contact", "book", "meeting", "schedule", "call", "talk", "reach", "demo", "connect", "calendly"];
-    const lower    = text.toLowerCase();
-    return keywords.some(k => lower.includes(k));
+    const keywords = ["contact", "book", "meeting", "schedule", "call", "talk",
+                      "reach", "demo", "connect", "calendly", "email", "touch"];
+    return keywords.some(k => text.toLowerCase().includes(k));
   }
 
   /* ── Chat helpers ───────────────────────────────────────────────────────── */
   function appendBotMessage(text, sources, isWelcome) {
     const msgs = document.getElementById("jb-messages");
     if (!msgs) return;
-    const bubble = el("div", { class: "jb-bubble" });
 
+    const bubble = el("div", { class: "jb-bubble" });
     if (isWelcome) {
       bubble.appendChild(buildWelcomeBubbleContent());
     } else {
@@ -430,6 +424,12 @@
       wrap.appendChild(bar);
     }
     msgs.appendChild(wrap);
+
+    /* ── Suggestion chips appear INSIDE the messages area, right below greeting ── */
+    if (isWelcome) {
+      msgs.appendChild(buildSuggestions());
+    }
+
     scrollBottom();
   }
 
@@ -499,7 +499,7 @@
       appendBotMessage(data.answer || "I couldn't find an answer.", data.sources || []);
       history.push({ role: "assistant", content: data.answer });
 
-      // If user asked about contact/booking — show meeting card
+      // Contact query → show hyperlink card (no button)
       if (isContactQuery(text)) {
         const msgs = document.getElementById("jb-messages");
         if (msgs) {
@@ -536,11 +536,7 @@
   window.JBChat = {
     open:      () => { openChat(); },
     close:     () => { closeChat(); },
-    // Call this in browser console to test email gate again: JBChat.resetUser()
-    resetUser: () => {
-      localStorage.removeItem("jb_user_email");
-      location.reload();
-    },
+    resetUser: () => { localStorage.removeItem("jb_user_email"); location.reload(); },
   };
 
 })();
