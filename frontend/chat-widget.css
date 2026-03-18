@@ -1,6 +1,8 @@
 /* ============================================================
-   JupiterBrains Chat Widget — v3.0.0
+   JupiterBrains Chat Widget — v3.2.0
    Theme: Swif.ai inspired — Black, White & Grey
+   CHANGES: Visible scrollbar, padded inputs, dropdown styles,
+            hyperlink contact card, suggestions in chat flow
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
@@ -39,7 +41,6 @@
 #jb-launcher:hover { transform: scale(1.1); }
 #jb-launcher svg   { width: 22px; height: 22px; fill: #000; }
 
-/* Show chat icon by default, close icon when open */
 #jb-launcher .jb-icon-open  { display: flex; }
 #jb-launcher .jb-icon-close { display: none; }
 #jb-launcher.jb-launcher-open .jb-icon-open  { display: none; }
@@ -80,7 +81,7 @@
   pointer-events: all;
 }
 
-/* ── Header (swif.ai style) ── */
+/* ── Header ── */
 #jb-header {
   display: flex;
   align-items: center;
@@ -126,18 +127,64 @@
 }
 .jb-h-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
+/* ── Three-dots dropdown wrapper (for correct positioning) ── */
+.jb-more-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* ── Three-dots dropdown menu ── */
+.jb-more-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--jb-surface);
+  border: 1px solid var(--jb-border2);
+  border-radius: 10px;
+  padding: 4px;
+  min-width: 178px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+  display: none;
+  z-index: 100;
+  font-family: var(--jb-font);
+}
+.jb-more-dropdown.jb-more-open {
+  display: block;
+  animation: jbFadeIn 0.15s ease;
+}
+@keyframes jbFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.jb-more-item {
+  padding: 9px 13px;
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--jb-text);
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.jb-more-item:hover { background: rgba(255,255,255,0.08); }
+
 /* ── Body ── */
 #jb-body {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;            /* let #jb-messages handle scroll */
   display: flex;
   flex-direction: column;
   transition: opacity 0.25s;
 }
-#jb-body::-webkit-scrollbar { width: 3px; }
-#jb-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 3px; }
 
-/* ── Email Screen (swif.ai style) ── */
+/* ── Messages wrapper ── */
+#jb-msgs-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Email Screen ── */
 #jb-email-screen {
   flex: 1;
   display: flex;
@@ -177,7 +224,7 @@
   padding-left: 2px;
 }
 
-/* ── Email Input Bar (swif.ai style bottom) ── */
+/* ── Email Input Bar ── */
 #jb-email-input-wrap {
   border-top: 1px solid var(--jb-border);
   background: var(--jb-surface);
@@ -188,13 +235,14 @@
   flex-shrink: 0;
 }
 
+/* CHANGE: increased horizontal padding for textboxes (was 10px 4px) */
 .jb-swif-input {
   width: 100%;
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--jb-border2);
   outline: none;
-  padding: 10px 4px;
+  padding: 10px 12px;     /* ← left & right padding increased */
   font-family: var(--jb-font);
   font-size: 13.5px;
   color: var(--jb-text);
@@ -202,7 +250,7 @@
 }
 .jb-swif-input:focus { border-bottom-color: rgba(255,255,255,0.3); }
 .jb-swif-input::placeholder { color: var(--jb-muted); }
-.jb-swif-input:last-of-type { border-bottom: none; margin-top: 2px; }
+.jb-swif-input-last { border-bottom: none; margin-top: 2px; }
 
 .jb-field-error {
   font-size: 11px;
@@ -241,7 +289,7 @@
 .jb-send-round:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 .jb-send-round svg { width: 15px; height: 15px; fill: #000; margin-left: 2px; }
 
-/* ── Messages ── */
+/* ── Messages (scrollable, with VISIBLE right scrollbar) ── */
 #jb-messages {
   flex: 1;
   overflow-y: auto;
@@ -251,8 +299,15 @@
   gap: 10px;
   scroll-behavior: smooth;
 }
-#jb-messages::-webkit-scrollbar { width: 3px; }
-#jb-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 3px; }
+
+/* CHANGE: visible scrollbar on the right side */
+#jb-messages::-webkit-scrollbar        { width: 6px; }
+#jb-messages::-webkit-scrollbar-track  { background: rgba(255,255,255,0.03); border-radius: 3px; }
+#jb-messages::-webkit-scrollbar-thumb  { background: rgba(255,255,255,0.22); border-radius: 3px; }
+#jb-messages::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.38); }
+
+/* Firefox scrollbar */
+#jb-messages { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.22) rgba(255,255,255,0.03); }
 
 /* ── Bubbles ── */
 .jb-msg {
@@ -313,15 +368,17 @@
   40%          { transform: translateY(-6px); opacity: 1; }
 }
 
-/* ── Suggestions ── */
+/* ── Suggestions — injected INSIDE #jb-messages below the greeting ── */
 #jb-suggestions {
   display: flex; flex-wrap: wrap; gap: 6px;
-  padding: 0 16px 12px;
+  padding: 4px 0 2px;   /* no side padding — inherits from #jb-messages padding */
   flex-shrink: 0;
+  align-self: flex-start;
+  max-width: 100%;
 }
 .jb-chip {
   font-family: var(--jb-font);
-  font-size: 12px; padding: 5px 18px;
+  font-size: 12px; padding: 5px 14px;
   background: rgba(255,255,255,0.05);
   border: 1px solid var(--jb-border2);
   border-radius: 20px; color: var(--jb-muted2);
@@ -334,10 +391,11 @@
   color: #fff;
 }
 
-/* ── Normal Chat Input ── */
+/* ── Chat Input Area ── */
+/* CHANGE: increased horizontal padding on textarea (was 9px 13px — kept) */
 #jb-input-area {
   display: flex; align-items: flex-end; gap: 8px;
-  padding: 10px 14px 14px;
+  padding: 10px 16px 14px;   /* ← left & right padding increased to 16px */
   border-top: 1px solid var(--jb-border);
   background: var(--jb-surface);
   flex-shrink: 0;
@@ -348,7 +406,7 @@
   background: rgba(255,255,255,0.05);
   border: 1px solid var(--jb-border2);
   border-radius: 10px;
-  padding: 9px 13px;
+  padding: 9px 14px;          /* ← comfortable horizontal padding */
   font-family: var(--jb-font); font-size: 13.5px;
   color: var(--jb-text); outline: none;
   resize: none; max-height: 100px; line-height: 1.5;
@@ -424,60 +482,68 @@
 }
 
 /* ── Meeting hyperlink in welcome bubble ── */
-.jb-inline-meeting-link {
+.jb-meeting-btn {
+  display: inline-block;
   color: var(--jb-text);
   font-weight: 500;
   text-decoration: underline;
   text-underline-offset: 3px;
-  text-decoration-color: rgba(255, 255, 255, 0.4);
+  text-decoration-color: rgba(255,255,255,0.4);
   transition: text-decoration-color 0.15s, opacity 0.15s;
 }
-.jb-inline-meeting-link:hover {
+.jb-meeting-btn:hover {
   text-decoration-color: #fff;
   opacity: 0.9;
 }
 
-/* ── Meeting card (shown after contact queries) ── */
+/* ── Contact card (shown after contact queries) — no button, just links ── */
 .jb-meeting-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: 12px;
-  padding: 12px 14px;
+  padding: 13px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
   margin-top: 2px;
+  min-width: 200px;
 }
-.jb-meeting-card-icon {
-  font-size: 22px;
-  flex-shrink: 0;
+
+.jb-meeting-line {
+  display: flex;
+  align-items: center;
 }
-.jb-meeting-card-info {
-  flex: 1;
-}
-.jb-meeting-card-title {
-  font-size: 13px;
+
+/* CHANGE: hyperlink text style — not a button */
+.jb-meeting-hyperlink {
+  font-family: var(--jb-font);
+  font-size: 13.5px;
   font-weight: 600;
-  color: #fff;
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255,255,255,0.35);
+  transition: text-decoration-color 0.15s, color 0.15s;
 }
+.jb-meeting-hyperlink:hover {
+  text-decoration-color: #fff;
+  color: #e0e0e0;
+}
+
+/* Email link slightly softer */
+.jb-meeting-email {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--jb-muted2);
+  text-decoration-color: rgba(153,153,153,0.35);
+}
+.jb-meeting-email:hover {
+  color: #ccc;
+  text-decoration-color: #ccc;
+}
+
 .jb-meeting-card-sub {
-  font-size: 11px;
+  font-size: 11.5px;
   color: #888;
-  margin-top: 2px;
-}
-.jb-meeting-card-btn {
-  padding: 7px 13px;
-  background: #ffffff;
-  color: #000;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background 0.15s, transform 0.15s;
-  flex-shrink: 0;
-}
-.jb-meeting-card-btn:hover {
-  background: #e8e8e8;
-  transform: translateY(-1px);
+  line-height: 1.4;
 }
