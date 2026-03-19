@@ -56,15 +56,16 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
 @app.exception_handler(Exception)
 async def global_error(request: Request, exc: Exception):
+    import traceback
     logger.exception("Unhandled: %s", exc)
-    return JSONResponse(status_code=500, content={"detail": "Internal error."})
+    return JSONResponse(status_code=500, content={"detail": traceback.format_exc()})
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
